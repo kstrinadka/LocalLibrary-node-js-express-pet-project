@@ -5,6 +5,15 @@
 
 *.iml
 
+# Dependency directories
+node_modules/
+
+# Optional npm cache directory
+.npm
+
+# dotenv environment variables file
+.env
+
 ## Directory-based project format:
 .idea/
 # if you remove the above rule, at least ignore the following:
