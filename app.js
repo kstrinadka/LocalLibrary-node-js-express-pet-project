@@ -10,6 +10,7 @@ import indexRouter from "./routes/index.js";
 import usersRouter from "./routes/users.js";
 import mongoose from "mongoose";
 import {PORT} from "./bin/www.js";
+import catalogRouter from "./routes/catalog.js"; //Import routes for "catalog" area of site
 
 const DB_URL = 'mongodb+srv://user:user@cluster0.cyb4frz.mongodb.net/?retryWrites=true&w=majority'
 
@@ -27,6 +28,7 @@ app.use(express.static(path.join(path.resolve(), 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use("/catalog", catalogRouter); // Add catalog routes to middleware chain.
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
