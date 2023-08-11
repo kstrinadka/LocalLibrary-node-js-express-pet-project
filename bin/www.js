@@ -3,11 +3,13 @@
 /**
  * Module dependencies.
  */
+import app from "../app.js";
 
-var app = require('../app');
-var debug = require('debug')('express-locallibrary-tutorial:server');
-var http = require('http');
+import debug0 from "debug";
 
+import http from "http";
+
+var debug = debug0('express-locallibrary-tutorial:server');
 /**
  * Get port from environment and store in Express.
  */

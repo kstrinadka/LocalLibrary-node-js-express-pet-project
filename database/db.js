@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 export const dbURI = 'mongodb+srv://user:user@cluster0.cyb4frz.mongodb.net/?retryWrites=true&w=majority'; // Проверьте, что адрес MongoDB правильный
 
 async function connectToDB() {
