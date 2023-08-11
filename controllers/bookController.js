@@ -1,7 +1,37 @@
 import Book from "../models/book.js";
+import Author from "../models/author.js";
+import Genre from "../models/genre.js";
+import BookInstance from "../models/bookinstance.js";
+import async from "async";
 
-export function index(req, res) {
-    res.send("NOT IMPLEMENTED: Site Home Page");
+export async function index(req, res) {
+    try {
+        // Используем await для каждого запроса и сохраняем результаты в переменных
+        const book_count = await Book.countDocuments({});
+        const book_instance_count = await BookInstance.countDocuments({});
+        const book_instance_available_count = await BookInstance.countDocuments({ status: "Available" });
+        const author_count = await Author.countDocuments({});
+        const genre_count = await Genre.countDocuments({});
+
+        // Передаем результаты в шаблон
+        res.render("index", {
+            title: "Local Library Home",
+            data: {
+                book_count,
+                book_instance_count,
+                book_instance_available_count,
+                author_count,
+                genre_count
+            }
+        });
+    } catch (err) {
+        // Обрабатываем ошибки
+        res.render("index", {
+            title: "Local Library Home",
+            error: err,
+            data: null
+        });
+    }
 }
 
 // Display list of all books.
