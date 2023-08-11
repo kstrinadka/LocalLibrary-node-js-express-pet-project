@@ -35,9 +35,21 @@ export async function index(req, res) {
 }
 
 // Display list of all books.
-export function book_list(req, res) {
-    res.send("NOT IMPLEMENTED: Book list");
+// Display list of all Books.
+export async function book_list(req, res, next) {
+    try {
+        // Используем await для запроса и сохраняем результат в переменной
+        const list_books = await Book.find({}, "title author")
+            .populate("author");
+        // Успешно, поэтому рендерим
+        res.render("book_list", { title: "Book List", book_list: list_books });
+    } catch (err) {
+        // Обрабатываем ошибку
+        return next(err);
+    }
 }
+
+
 
 // Display detail page for a specific book.
 export function book_detail(req, res) {
