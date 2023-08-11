@@ -14,8 +14,8 @@ var debug = debug0('express-locallibrary-tutorial:server');
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
+export const PORT = normalizePort(process.env.PORT || '3000');
+app.set('port', PORT);
 
 /**
  * Create HTTP server.
@@ -27,7 +27,7 @@ var server = http.createServer(app);
  * Listen on provided port, on all network interfaces.
  */
 
-server.listen(port);
+// server.listen(PORT);
 server.on('error', onError);
 server.on('listening', onListening);
 
@@ -60,9 +60,9 @@ function onError(error) {
     throw error;
   }
 
-  var bind = typeof port === 'string'
-    ? 'Pipe ' + port
-    : 'Port ' + port;
+  var bind = typeof PORT === 'string'
+    ? 'Pipe ' + PORT
+    : 'Port ' + PORT;
 
   // handle specific listen errors with friendly messages
   switch (error.code) {

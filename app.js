@@ -2,19 +2,16 @@
 
 
 import createError from "http-errors";
-
 import express from "express";
-
 import path from "path";
-
 import cookieParser from "cookie-parser";
-
 import logger from "morgan";
-
 import indexRouter from "./routes/index.js";
-
 import usersRouter from "./routes/users.js";
-import e from "express";
+import mongoose from "mongoose";
+import {PORT} from "./bin/www.js";
+
+const DB_URL = 'mongodb+srv://user:user@cluster0.cyb4frz.mongodb.net/?retryWrites=true&w=majority'
 
 var app = express();
 
@@ -47,7 +44,17 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-// connectToDB();
+
+async function startApp() {
+  try {
+    await mongoose.connect(DB_URL,  {useUnifiedTopology: true, useNewUrlParser: true})
+    app.listen(PORT, () => console.log("SERVER STARTED ON PORT" + PORT))
+  } catch (e) {
+    console.log(e)
+  }
+}
+
+startApp()
 
 
 export default app;

@@ -15,4 +15,5 @@ async function connectToDB() {
     }
 }
 
-module.exports = connectToDB;
+export default connectToDB;
+// module.exports = connectToDB;
