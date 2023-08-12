@@ -7,9 +7,21 @@ class AuthorController {
 }
 
 // Показать список всех авторов.
-export function author_list(req, res) {
-    res.send("NOT IMPLEMENTED: Author list");
+// Display list of all Authors.
+export async function author_list(req, res, next) {
+    try {
+        const list_authors = await Author.find({})
+            .sort([["family_name", "ascending"]]);
+
+        res.render("author_list", {
+            title: "Author List",
+            author_list: list_authors,
+        });
+    } catch (err) {
+        return next(err);
+    }
 }
+
 
 // Показать подробную страницу для данного автора.
 export function author_detail(req, res) {

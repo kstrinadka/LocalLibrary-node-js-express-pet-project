@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import moment from "moment";
 
 var Schema = mongoose.Schema;
 
@@ -18,6 +19,11 @@ var BookInstanceSchema = new Schema({
 BookInstanceSchema.virtual("url").get(function () {
     return "/catalog/bookinstance/" + this._id;
 });
+
+BookInstanceSchema.virtual("due_back_formatted").get(function () {
+    return moment(this.due_back).format("MMMM Do, YYYY");
+});
+
 
 //Export model
 export default mongoose.model('BookInstance', BookInstanceSchema);
