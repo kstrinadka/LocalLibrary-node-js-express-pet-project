@@ -3,6 +3,7 @@ import Author from "../models/author.js";
 import Genre from "../models/genre.js";
 import BookInstance from "../models/bookinstance.js";
 import async from "async";
+import expressAsyncHandler from "express-async-handler";
 
 export async function index(req, res) {
     try {
@@ -34,7 +35,6 @@ export async function index(req, res) {
     }
 }
 
-// Display list of all books.
 // Display list of all Books.
 export async function book_list(req, res, next) {
     try {
@@ -52,9 +52,29 @@ export async function book_list(req, res, next) {
 
 
 // Display detail page for a specific book.
-export function book_detail(req, res) {
-    res.send("NOT IMPLEMENTED: Book detail: " + req.params.id);
-}
+export const book_detail = expressAsyncHandler
+        (async (req, res, next) => {
+
+    // Get details of books, book instances for specific book
+    const [book, bookInstances] = await Promise.all([
+        Book.findById(req.params.id).populate("author").populate("genre").exec(),
+        BookInstance.find({ book: req.params.id }).exec(),
+    ]);
+
+    if (book === null) {
+        // No results.
+        const err = new Error("Book not found");
+        err.status = 404;
+        return next(err);
+    }
+
+    res.render("book_detail", {
+        title: book.title,
+        book: book,
+        book_instances: bookInstances,
+    });
+});
+
 
 // Display book create form on GET.
 export function book_create_get(req, res) {
