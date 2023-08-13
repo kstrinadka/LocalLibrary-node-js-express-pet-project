@@ -95,6 +95,7 @@ export const book_create_get = expressAsyncHandler(async (req, res, next) => {
 // Handle book create on POST.
 // Handle book create on POST.
 export const book_create_post = [
+
     // Convert the genre to an array.
     (req, res, next) => {
         if (!(req.body.genre instanceof Array)) {
@@ -119,8 +120,8 @@ export const book_create_post = [
         .escape(),
     body("isbn", "ISBN must not be empty").trim().isLength({ min: 1 }).escape(),
     body("genre.*").escape(),
-    // Process request after validation and sanitization.
 
+    // Process request after validation and sanitization.
     expressAsyncHandler(async (req, res, next) => {
         // Extract the validation errors from a request.
         const errors = validationResult(req);
@@ -149,6 +150,7 @@ export const book_create_post = [
                     genre.checked = "true";
                 }
             }
+
             res.render("book_form", {
                 title: "Create Book",
                 authors: allAuthors,
