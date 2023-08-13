@@ -1,6 +1,6 @@
 import Genre from "../models/genre.js";
 import Book from "../models/book.js";
-import async from "async";
+import validator from "express-validator";
 
 // Display list of all Genre.
 export async function genre_list(req, res) {
@@ -39,14 +39,58 @@ export async function genre_detail(req, res, next) {
 }
 
 // Display Genre create form on GET.
-export function genre_create_get(req, res) {
-    res.send("NOT IMPLEMENTED: Genre create GET");
+export function genre_create_get(req, res, next) {
+    res.render("genre_form", { title: "Create Genre" });
 }
 
-// Handle Genre create on POST.
-export function genre_create_post(req, res) {
-    res.send("NOT IMPLEMENTED: Genre create POST");
-}
+// Handle Genre create on POST
+export const genre_create_post = [
+    // Validate that the name field is not empty.
+    validator.body("name", "Genre name required").trim().isLength({min: 1}),
+
+    // Sanitize (escape) the name field.
+    validator.body("name").escape(),
+
+    // Process request after validation and sanitization.
+    (req, res, next) => {
+        // Extract the validation errors from a request.
+        const errors = validator.validationResult(req);
+
+        // Create a genre object with escaped and trimmed data.
+        var genre = new Genre({ name: req.body.name });
+
+        if (!errors.isEmpty()) {
+            // There are errors. Render the form again with sanitized values/error messages.
+            res.render("genre_form", {
+                title: "Create Genre",
+                genre: genre,
+                errors: errors.array(),
+            });
+        } else {
+            // Data from form is valid.
+            // Check if Genre with same name already exists.
+            (async () => {
+                try {
+                    // Используем await для запроса и сохраняем результат в переменной
+                    const found_genre = await Genre.findOne({ name: req.body.name });
+
+                    if (found_genre) {
+                        // Genre exists, redirect to its detail page.
+                        res.redirect(found_genre.url);
+                    } else {
+                        // Используем await для сохранения жанра и обрабатываем ошибки
+                        await genre.save();
+                        // Genre saved. Redirect to genre detail page.
+                        res.redirect(genre.url);
+                    }
+                } catch (err) {
+                    // Обрабатываем ошибку
+                    return next(err);
+                }
+            })();
+        }
+    },
+];
 
 // Display Genre delete form on GET.
 export function genre_delete_get(req, res) {
