@@ -5,6 +5,7 @@ import BookInstance from "../models/bookinstance.js";
 import expressAsyncHandler from "express-async-handler";
 import {body, validationResult} from "express-validator";
 
+
 export async function index(req, res) {
     try {
         // Используем await для каждого запроса и сохраняем результаты в переменных
@@ -178,11 +179,116 @@ export function book_delete_post(req, res) {
 }
 
 // Display book update form on GET.
-export function book_update_get(req, res) {
-    res.send("NOT IMPLEMENTED: Book update GET");
+// Display book update form on GET.
+export async function book_update_get(req, res, next) {
+    try {
+        const book = await Book.findById(req.params.id)
+            .populate("author")
+            .populate("genre")
+            .exec();
+
+        const authors = await Author.find();
+        const genres = await Genre.find();
+
+        if (!book) {
+            const err = new Error("Book not found");
+            err.status = 404;
+            throw err;
+        }
+
+        // Mark selected genres as checked.
+        for (const genre of genres) {
+            if (book.genre.some(bookGenre => bookGenre._id.toString() === genre._id.toString())) {
+                genre.checked = true;
+            }
+        }
+
+        res.render("book_form", {
+            title: "Update Book",
+            authors: authors,
+            genres: genres,
+            book: book,
+        });
+    } catch (err) {
+        next(err);
+    }
 }
 
+
 // Handle book update on POST.
-export function book_update_post(req, res) {
-    res.send("NOT IMPLEMENTED: Book update POST");
-}
+// Handle book update on POST.
+export const book_update_post = [
+    // Convert the genre to an array
+    (req, res, next) => {
+        if (!(req.body.genre instanceof Array)) {
+            if (typeof req.body.genre === "undefined") req.body.genre = [];
+            else req.body.genre = [req.body.genre];
+        }
+        next();
+    },
+
+    // Validate fields.
+    body("title", "Title must not be empty.").isLength({ min: 1 }).trim(),
+    body("author", "Author must not be empty.").isLength({ min: 1 }).trim(),
+    body("summary", "Summary must not be empty.").isLength({ min: 1 }).trim(),
+    body("isbn", "ISBN must not be empty").isLength({ min: 1 }).trim(),
+
+    // Sanitize fields.
+    body("title").trim().escape(),
+    body("author").trim().escape(),
+    body("summary").trim().escape(),
+    body("isbn").trim().escape(),
+    body("genre.*").trim().escape(),
+
+    // Process request after validation and sanitization.
+    async (req, res, next) => {
+        try {
+            // Extract the validation errors from a request.
+            const errors = validationResult(req);
+
+            // Create a Book object with escaped/trimmed data and old id.
+            const book = new Book({
+                title: req.body.title,
+                author: req.body.author,
+                summary: req.body.summary,
+                isbn: req.body.isbn,
+                genre: typeof req.body.genre === "undefined" ? [] : req.body.genre,
+                _id: req.params.id, //This is required, or a new ID will be assigned!
+            });
+
+            if (!errors.isEmpty()) {
+                // There are errors. Render form again with sanitized values/error messages.
+
+                // Get all authors and genres for form.
+                const [authors, genres] = await Promise.all([
+                    Author.find(),
+                    Genre.find(),
+                ]);
+
+                // Mark selected genres as checked.
+                for (const genre of genres) {
+                    if (book.genre.includes(genre._id.toString())) {
+                        genre.checked = true;
+                    }
+                }
+
+                res.render("book_form", {
+                    title: "Update Book",
+                    authors: authors,
+                    genres: genres,
+                    book: book,
+                    errors: errors.array(),
+                });
+            } else {
+                // Data from form is valid. Update the record.
+                await Book.findByIdAndUpdate(req.params.id, book, {});
+
+                // Successful - redirect to book detail page.
+                res.redirect(book.url);
+            }
+        } catch (err) {
+            next(err);
+        }
+    },
+];
+

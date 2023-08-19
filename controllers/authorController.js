@@ -129,14 +129,59 @@ export const author_create_post = [
 
 
 // Показать форму удаления автора по запросу GET.
-export function author_delete_get(req, res) {
-    res.send("NOT IMPLEMENTED: Author delete GET");
+// Отображать форму для удаления автора GET
+export async function author_delete_get(req, res, next) {
+    try {
+        // Используем await для каждого запроса и сохраняем результаты в переменных
+        const author = await Author.findById(req.params.id);
+        const authors_books = await Book.find({ author: req.params.id });
+
+        if (author == null) {
+            // No results.
+            res.redirect("/catalog/authors");
+        } else {
+            // Удачно, значит рендерим.
+            res.render("author_delete", {
+                title: "Delete Author",
+                author: author,
+                author_books: authors_books,
+            });
+        }
+    } catch (err) {
+        // Обрабатываем ошибку
+        return next(err);
+    }
 }
 
 // Удалить автора по запросу POST.
-export function author_delete_post(req, res) {
-    res.send("NOT IMPLEMENTED: Author delete POST");
+// Обработчик удаления автора POST.
+export async function author_delete_post(req, res, next) {
+    try {
+        // Используем await для каждого запроса и сохраняем результаты в переменных
+        const author = await Author.findById(req.body.authorid);
+        const authors_books = await Book.find({ author: req.body.authorid });
+
+        // Success
+        if (authors_books.length > 0) {
+            // Автор книги. Визуализация выполняется так же, как и для GET route.
+            res.render("author_delete", {
+                title: "Delete Author",
+                author: author,
+                author_books: authors_books,
+            });
+        } else {
+            //У автора нет никаких книг. Удалить объект и перенаправить в список авторов.
+            await Author.findByIdAndRemove(req.body.authorid);
+            // Успех-перейти к списку авторов
+            res.redirect("/catalog/authors");
+        }
+    } catch (err) {
+        // Обрабатываем ошибку
+        return next(err);
+    }
 }
+
+
 
 // Показать форму обновления автора по запросу GET.
 export function author_update_get(req, res) {
